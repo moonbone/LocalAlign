@@ -1,4 +1,5 @@
 /**
+/**
  * Author: Paul Reiners
  */
 package com.ibm.compbio;
@@ -10,7 +11,7 @@ package com.ibm.compbio;
  */
 public class Cell {
    private Cell prevCell;
-   private int score;
+   private double score;
    private int row;
    private int col;
 
@@ -23,6 +24,10 @@ public class Cell {
     * @param score
     *           the score to set
     */
+   public void setScore(double score) {
+      this.score = score;
+   }
+   
    public void setScore(int score) {
       this.score = score;
    }
@@ -31,6 +36,11 @@ public class Cell {
     * @return the score
     */
    public int getScore() {
+      return (int) score;
+   }
+   
+   public double getScoreDouble()
+   {
       return score;
    }
 

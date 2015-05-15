@@ -1,7 +1,7 @@
 /**
  * Author: Paul Reiners
  */
-package com.ibm.biojava.sample;
+package com.ibm.sample;
 
 import org.biojava.bio.alignment.NeedlemanWunsch;
 import org.biojava.bio.alignment.SequenceAlignment;
