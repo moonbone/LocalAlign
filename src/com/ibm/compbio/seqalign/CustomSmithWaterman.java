@@ -19,22 +19,23 @@ public class CustomSmithWaterman extends SmithWaterman {
       m_probs2 = probs2;
    }
    
-   private double getProbabilityScore(Cell c)
+   private double getProbabilityScore(Cell c,int bitmask)
    {
-      return 0.5*(m_probs1[c.getCol()-1]+m_probs2[c.getRow()-1]);
+	  // bitmask = 3;
+      return (Math.pow(0.5,Math.max(0,bitmask-2))) * ((1&bitmask)*m_probs1[c.getCol()-1]+(2&bitmask)*m_probs2[c.getRow()-1]);
    }
    
    @Override
    protected void fillInCell(Cell currentCell, Cell cellAbove, Cell cellToLeft,
          Cell cellAboveLeft) {
-      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScore(currentCell);
-      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScore(currentCell);
+      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScore(currentCell,2);
+      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScore(currentCell,1);
       double matchOrMismatchScore = cellAboveLeft.getScoreDouble();
       if (sequence2.charAt(currentCell.getRow() - 1) == sequence1
             .charAt(currentCell.getCol() - 1)) {
-         matchOrMismatchScore += match*getProbabilityScore(currentCell);
+         matchOrMismatchScore += match*getProbabilityScore(currentCell,3);
       } else {
-         matchOrMismatchScore += mismatch*getProbabilityScore(currentCell);
+         matchOrMismatchScore += mismatch*getProbabilityScore(currentCell,3);
       }
       if (rowSpaceScore >= colSpaceScore) {
          if (matchOrMismatchScore >= rowSpaceScore) {
@@ -64,6 +65,36 @@ public class CustomSmithWaterman extends SmithWaterman {
       if (currentCell.getScore() > highScoreCell.getScore()) {
          highScoreCell = currentCell;
       }
+   }
+   
+   @Override
+   public String[] getAlignment()
+   {
+	   String[] retArray = super.getAlignment();
+	   StringBuffer align1Buf = new StringBuffer();
+	   StringBuffer align2Buf = new StringBuffer();
+	   Cell currentCell = getTracebackStartingCell();
+	   int lastRow = currentCell.getRow(),lastCol = currentCell.getCol();
+	   int firstRow=0,firstCol=0;
+	   while (traceBackIsNotDone(currentCell)) {
+		   firstRow = currentCell.getRow();
+		   firstCol = currentCell.getCol();
+		   if (currentCell.getRow() - currentCell.getPrevCell().getRow() == 1) {
+			   align2Buf.insert(0, String.format("  %4.4f  ", m_probs2[currentCell.getRow() - 1]).replace("0.", "."));
+		   } else {
+			   align2Buf.insert(0, "    -    ");
+		   }
+		   if (currentCell.getCol() - currentCell.getPrevCell().getCol() == 1) {
+			   align1Buf.insert(0, String.format("  %4.4f  ", m_probs1[currentCell.getCol() - 1]).replace("0.", "."));
+		   } else {
+			   align1Buf.insert(0, "    -    ");
+		   }
+		   currentCell = currentCell.getPrevCell();
+	   }
+	   retArray[0] = align1Buf.toString() + "\n" + String.format("%d", firstCol) + retArray[0].replace("", "        ").substring(7) + String.format("%d", lastCol);
+	   retArray[1] = String.format("%d", firstRow) + retArray[1].replace("", "        ").substring(7) + String.format("%d", lastRow) + "\n" +  align2Buf.toString() ;
+	   
+	   return retArray;
    }
 
 }
