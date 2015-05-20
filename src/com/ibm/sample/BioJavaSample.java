@@ -39,7 +39,7 @@ public class BioJavaSample {
       int gapExtend = 2;
       // Global alignment.
       //SequenceAlignment aligner = new NeedlemanWunsch(match, replace, insert,delete, gapExtend, matrix);
-      String q =  "aaaaaaaaccttgtaaaaaaagcaaaaatgacaacagaaaaacaatcttattccgagcattccagtaacttttttgtgtatgtacttagctgtactataagtagttggtttgtatgagatggttaaaAAGGCCAAAGATAAAAGGTTTCTTTTTTTTTCCTTTTTTGtctatgaagttgctgtttattttttttggcctgtttgatgtatgtgtgaaacaatgttgtccaacaataaacaggaattttattttgctgagttgttctaacaaagctgtctcaagcctggtttttctgtttcagtttcttc".toUpperCase();
+      String q = "aaaaaaaaccttgtaaaaaaagcaaaaatgacaacagaaaaacaatcttattccgagcattccagtaacttttttgtgtatgtacttagctgtactataagtagttggtttgtatgagatggttaaaAAGGCCAAAGATAAAAGGTTTCTTTTTTTTTCCTTTTTTGtctatgaagttgctgtttattttttttggcctgtttgatgtatgtgtgaaacaatgttgtccaacaataaacaggaattttattttgctgagttgttctaacaaagctgtctcaagcctggtttttctgtttcagtttcttc".toUpperCase();
       String t = "tgtgcccagctggctggaaacctggcagtgataccatcaagcctgatgtccaaaagagcaaagaatatttctccaagcagaagtgagcgctgggctgttttagtgccaggctgcggtgggcagccatgagAACAAAACCTCTTCTGTATTTTTTTTTTCCATTAGTAAAAcacaagacttcagattcagccgaattgtggtgtcttacaaggcaggcctttcctacagggggtggagagaccagcctttcttcctttggtaggaatggcctgagttggcgttgtgggcaggctactggtttgtatgatg".toUpperCase();
       /*
        * Sequence query = DNATools.createDNASequence(q, "query");
