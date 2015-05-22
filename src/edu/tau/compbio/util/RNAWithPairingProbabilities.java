@@ -1,10 +1,10 @@
 package edu.tau.compbio.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -31,9 +31,9 @@ public class RNAWithPairingProbabilities {
 		return m_probs[i];
 	}
 	
-	public char[] getSequenceArray()
+	public String getSequenceArray()
 	{
-		return m_seq.toCharArray();
+		return m_seq;
 	}
 	
 	public double[] getProbabilitiesArray()
@@ -48,15 +48,16 @@ public class RNAWithPairingProbabilities {
 			Vector<RNAWithPairingProbabilities> retVal = new Vector<RNAWithPairingProbabilities>();
 			
 			BufferedReader reader = new BufferedReader(new FileReader(sequencesFile));
-			Scanner csv = new Scanner(probabilitiesFile);
-			csv.useDelimiter("[,\\s]");
-			
+			Scanner csv = new Scanner(new File(probabilitiesFile));//.useLocale(Locale.US);
+			csv.useDelimiter("[,\\s]+");
+						
 			String line = reader.readLine();
 			while(line != null)
 			{
 				double[] probs = new double[line.length()];
 				for (int i=0;i<line.length();i++)
 				{
+					//System.out.println(csv.next());
 					probs[i] = csv.nextDouble();
 				}
 				
