@@ -25,18 +25,27 @@ public class CustomSmithWaterman extends SmithWaterman {
       return (Math.pow(0.5,Math.max(0,bitmask-2))) * ((1&bitmask)*m_probs1[c.getCol()-1]+(2&bitmask)*m_probs2[c.getRow()-1]);
    }
    
+   private double getMatchMismatchScore(Cell cell)
+   {
+	   if (sequence2.charAt(cell.getRow() - 1) == sequence1.charAt(cell.getCol() - 1))
+	   {
+		   return match;
+	   }
+	   else 
+	   {
+		   return mismatch;
+	   } 
+   }
+   
    @Override
    protected void fillInCell(Cell currentCell, Cell cellAbove, Cell cellToLeft,
          Cell cellAboveLeft) {
-      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScore(currentCell,2);
-      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScore(currentCell,1);
+      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScore(currentCell,2) -3;
+      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScore(currentCell,1) -3;
       double matchOrMismatchScore = cellAboveLeft.getScoreDouble();
-      if (sequence2.charAt(currentCell.getRow() - 1) == sequence1
-            .charAt(currentCell.getCol() - 1)) {
-         matchOrMismatchScore += match*getProbabilityScore(currentCell,3);
-      } else {
-         matchOrMismatchScore += mismatch*getProbabilityScore(currentCell,3);
-      }
+      
+      matchOrMismatchScore += getMatchMismatchScore(currentCell)*getProbabilityScore(currentCell,3) -3;
+      
       if (rowSpaceScore >= colSpaceScore) {
          if (matchOrMismatchScore >= rowSpaceScore) {
             if (matchOrMismatchScore > 0) {
@@ -91,8 +100,8 @@ public class CustomSmithWaterman extends SmithWaterman {
 		   }
 		   currentCell = currentCell.getPrevCell();
 	   }
-	   retArray[0] = align1Buf.toString() + "\n" + String.format("%d", firstCol) + retArray[0].replace("", "        ").substring(7) + String.format("%d", lastCol);
-	   retArray[1] = String.format("%d", firstRow) + retArray[1].replace("", "        ").substring(7) + String.format("%d", lastRow) + "\n" +  align2Buf.toString() ;
+	   retArray[0] = align1Buf.toString() + "\n" + String.format("%3d", firstCol) + retArray[0].replace("", "        ").substring(7) + String.format("%d", lastCol);
+	   retArray[1] = String.format("%3d", firstRow) + retArray[1].replace("", "        ").substring(7) + String.format("%d", lastRow) + "\n" +  align2Buf.toString() ;
 	   
 	   return retArray;
    }

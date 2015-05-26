@@ -30,11 +30,11 @@ public class BioJavaSample {
             .alphabetForName("DNA");
       // Use a substitution matrix with equal scores for every match and every
       // replace.
-      int match = 1;
-      int replace = -3;
+      int match = 5;
+      int replace = -4;
+      int insert = 10;
       //SubstitutionMatrix matrix = new SubstitutionMatrix(alphabet, match,replace);
       // Firstly, define the expenses (penalties) for every single operation.
-      int insert = 2;
       int delete = 2;
       int gapExtend = 2;
       // Global alignment.
