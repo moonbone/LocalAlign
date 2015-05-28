@@ -105,5 +105,11 @@ public class CustomSmithWaterman extends SmithWaterman {
 	   
 	   return retArray;
    }
+   
+   public String[] getAlignedSequences()
+   {
+	   ensureTableIsFilledIn();
+	   return (String[])getTraceback();
+   }
 
 }
