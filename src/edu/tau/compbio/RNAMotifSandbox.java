@@ -17,27 +17,32 @@ public class RNAMotifSandbox {
 		int gap = -10;
 		
 		Vector<RNAWithPairingProbabilities> data = RNAWithPairingProbabilities.readFromFiles(args[0], args[1]);
-		RNACompeteScorer rnaCompete = new RNACompeteScorer(new File("W:\\master\\alignerTest\\z_scores.txt"), "RNCMPT00121_z_setA");
-		
+		RNACompeteScorer rnaCompete = new RNACompeteScorer(new File(args[2]), args[3]);
+				
 		int i = 0;
+		double totalSequences = data.size();
+		double totalScore = 0;
 		for (RNAWithPairingProbabilities rna1 : data)
 		{
+			System.out.printf("\b\b\b\b\b\b\b\b\b\b%4d%%",(int)(100*i/totalSequences));
 			for (RNAWithPairingProbabilities rna2 : data.subList(data.indexOf(rna1)+1, data.size()))
 			{
 				CustomSmithWaterman a  = new CustomSmithWaterman(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray());
 				String[] res=  a.getAlignedSequences();
 				//System.out.println(res[0] + "\t" + res[1]);
 				
-				System.out.printf("%f\t%f\n",rnaCompete.getScoreForSubsequence(res[0]),rnaCompete.getScoreForSubsequence(res[1]));
+				//System.out.printf("%f\t%f\n",rnaCompete.getScoreForSubsequence(res[0]),rnaCompete.getScoreForSubsequence(res[1]));
+				totalScore += rnaCompete.getScoreForSubsequence(res[0])+rnaCompete.getScoreForSubsequence(res[1]);
 				
-				i++;
-				if (i>1000)
-				{
-				//	return;
-				}
-			}			
+				
+			}
+			i++;
+			if (i>1000)
+			{
+				//return;
+			}
 		}
-		
+		System.out.printf("\n%f\n",totalScore);
 		// Perform the local alignment.
 //		String[] aa = a.getAlignment();
 //		System.out.println("\nLocal alignment with Smith-Waterman:\n"

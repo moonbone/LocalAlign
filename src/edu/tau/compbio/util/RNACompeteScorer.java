@@ -9,11 +9,15 @@ import java.util.Collections;
 import java.util.Scanner;
 import java.util.Vector;
 
+
+
 public class RNACompeteScorer {
 
 	private Vector<Double> m_scores;
 	private double m_normalizationFactor;
 	private static final int s_k = 7;
+	private static final String FUNC1_KMER = "GAAGAGC";
+	private static final String FUNC2_KMER = "GCUCUUC";
 	
 	public RNACompeteScorer(File inputData, String proteinID) throws FileNotFoundException, IOException
 	{
@@ -37,7 +41,28 @@ public class RNACompeteScorer {
 			m_scores.add(valuesScanner.nextDouble());
 			
 		}
+		
+		correctFuncKmerScore(FUNC1_KMER);
+		correctFuncKmerScore(FUNC2_KMER);
+		setRefSequence(null);
 	}
+	
+	private void correctFuncKmerScore(String funcKmer)
+	{
+		double scoreTemp = 0;
+		StringBuffer sb = new StringBuffer(funcKmer);
+		char funcLastChar = funcKmer.charAt(s_k-1);
+		for (char c : "ACGU".toCharArray())
+		{
+			if (c != funcLastChar)
+			{
+				sb.setCharAt(s_k-1, c);
+				scoreTemp += m_scores.elementAt(kMerToIndex(sb.toString()));
+			}
+		}
+		m_scores.setElementAt(scoreTemp/3.0,kMerToIndex(funcKmer));
+	}
+	
 	
 	public void setRefSequence(String seq)
 	{
@@ -46,10 +71,16 @@ public class RNACompeteScorer {
 	
 	public double getScoreForSubsequence(String subSeq)
 	{
-		StringBuffer sb = new StringBuffer(subSeq.substring(0, 7));
+		subSeq = subSeq.replace("-", "");
+		//TODO: add average in addition to max (2 options)
+		if(subSeq.length() < s_k)
+		{
+			return 0;
+		}
+		StringBuffer sb = new StringBuffer(subSeq.substring(0, s_k));
 		double maxScore = m_scores.elementAt(kMerToIndex(sb.toString()));
 		
-		for(char c : subSeq.substring(7).toCharArray())
+		for(char c : subSeq.substring(s_k).toCharArray())
 		{
 			sb.append(c);
 			sb.deleteCharAt(0);
