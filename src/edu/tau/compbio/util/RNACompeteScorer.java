@@ -78,16 +78,16 @@ public class RNACompeteScorer {
 			return 0;
 		}
 		StringBuffer sb = new StringBuffer(subSeq.substring(0, s_k));
-		double maxScore = m_scores.elementAt(kMerToIndex(sb.toString()));
+		double avgScore = m_scores.elementAt(kMerToIndex(sb.toString()));
 		
 		for(char c : subSeq.substring(s_k).toCharArray())
 		{
 			sb.append(c);
 			sb.deleteCharAt(0);
-			maxScore = Math.max(maxScore, m_scores.elementAt(kMerToIndex(sb.toString())));
+			avgScore += m_scores.elementAt(kMerToIndex(sb.toString()));
 		}
 		
-		return maxScore / m_normalizationFactor;
+		return (avgScore / m_normalizationFactor) / (subSeq.length() + 1  - s_k) ;
 	}
 	
 	private int kMerToIndex(String kmer)
