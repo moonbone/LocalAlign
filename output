@@ -1,0 +1,84 @@
+Working with params:
+	match:           5
+	mismatch:       -4
+	gap:           -10
+
+614707.748060
+Working with params:
+	match:           5
+	mismatch:       -3
+	gap:           -10
+
+607630.030379
+Working with params:
+	match:           5
+	mismatch:       -6
+	gap:           -10
+
+620590.478475
+Working with params:
+	match:           5
+	mismatch:       -5
+	gap:           -10
+
+618395.492103
+Working with params:
+	match:           5
+	mismatch:       -4
+	gap:            -5
+
+599100.242405
+Working with params:
+	match:           5
+	mismatch:       -3
+	gap:            -5
+
+592904.154648
+Working with params:
+	match:           5
+	mismatch:       -6
+	gap:            -5
+
+604789.869891
+Working with params:
+	match:           5
+	mismatch:       -5
+	gap:            -5
+
+602679.524025
+Working with params:
+	match:           5
+	mismatch:       -4
+	gap:            -3
+
+578683.567422
+Working with params:
+	match:           5
+	mismatch:       -3
+	gap:            -3
+
+572460.073858
+Working with params:
+	match:           5
+	mismatch:       -6
+	gap:            -3
+
+584802.457940
+Working with params:
+	match:           5
+	mismatch:       -5
+	gap:            -3
+
+582366.891405
+[5, -4, -10]
+[5, -3, -10]
+[5, -6, -10]
+[5, -5, -10]
+[5, -4, -5]
+[5, -3, -5]
+[5, -6, -5]
+[5, -5, -5]
+[5, -4, -3]
+[5, -3, -3]
+[5, -6, -3]
+[5, -5, -3]
