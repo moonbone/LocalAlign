@@ -54,12 +54,13 @@ public class RNAMotifSandbox {
 		if(null == sequenceInputFile || null == probabilitiesInputFile || null == rnaCompeteInputFile || null == rnaCompeteExperimentID)
 		{
 			System.err.println("A mandatory option is missing. check input files and protein ID and run again.");
+			System.err.printf("%b %b %b %b\n",null == sequenceInputFile , null == probabilitiesInputFile , null == rnaCompeteInputFile , null == rnaCompeteExperimentID);
 			System.exit(2);
 		}
 		System.out.printf("Working with params:\n\tmatch:%12d\n\tmismatch:%9d\n\tgap:%14d\n",match,mismatch,gap);
 		
 		
-		Vector<RNAWithPairingProbabilities> data = RNAWithPairingProbabilities.readFromFiles(sequenceInputFile, probabilitiesInputFile);
+		Vector<RNAWithPairingProbabilities> data = RNAWithPairingProbabilities.readFromFiles(sequenceInputFile, probabilitiesInputFile,true);
 		RNACompeteScorer rnaCompete = new RNACompeteScorer(new File(rnaCompeteInputFile), rnaCompeteExperimentID);
 				
 		int i = 0;
@@ -67,13 +68,12 @@ public class RNAMotifSandbox {
 		double totalScore = 0;
 		for (RNAWithPairingProbabilities rna1 : data)
 		{
-			System.err.printf("\b\b\b\b\b\b\b\b\b\b%4d%%",(int)(100*i/totalSequences));
+			System.err.printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b%4d%% (%4d/%4d)",(int)(100*i/totalSequences),i+1,(int)totalSequences);
 			for (RNAWithPairingProbabilities rna2 : data.subList(data.indexOf(rna1)+1, data.size()))
 			{
 				CustomSmithWaterman a  = new CustomSmithWaterman(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray());
 				String[] res=  a.getAlignedSequences();
-				//System.out.println(res[0] + "\t" + res[1]);
-				
+								
 				//System.out.printf("%f\t%f\n",rnaCompete.getScoreForSubsequence(res[0]),rnaCompete.getScoreForSubsequence(res[1]));
 				totalScore += rnaCompete.getScoreForSubsequence(res[0])+rnaCompete.getScoreForSubsequence(res[1]);
 				

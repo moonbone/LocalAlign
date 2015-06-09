@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -15,9 +16,11 @@ public class RNAWithPairingProbabilities {
 	
 	public RNAWithPairingProbabilities(String seq, double[] probs)
 	{
-	
-		m_seq = seq;
-		m_probs = probs.clone();
+		int i = seq.replaceAll("[ACGT]", "#").indexOf('#');
+		int j = seq.replaceAll("[ACGT]", "#").lastIndexOf('#');
+		m_seq = seq.substring(i, j+1);
+		m_probs = Arrays.copyOfRange(probs,i,j+1);
+		//m_probs = (Double[])Arrays.asList( probs ).subList(i,j).toArray();
 		
 	}
 	
@@ -43,6 +46,11 @@ public class RNAWithPairingProbabilities {
 	
 	public static Vector<RNAWithPairingProbabilities> readFromFiles(String sequencesFile, String probabilitiesFile)
 	{
+		return readFromFiles(sequencesFile, probabilitiesFile, false);
+	}
+	
+	public static Vector<RNAWithPairingProbabilities> readFromFiles(String sequencesFile, String probabilitiesFile, boolean onlyCaps)
+	{
 		try
 		{
 			Vector<RNAWithPairingProbabilities> retVal = new Vector<RNAWithPairingProbabilities>();
@@ -61,7 +69,7 @@ public class RNAWithPairingProbabilities {
 					probs[i] = csv.nextDouble();
 				}
 				
-				RNAWithPairingProbabilities rna = new RNAWithPairingProbabilities(line.toUpperCase(), probs);
+				RNAWithPairingProbabilities rna = new RNAWithPairingProbabilities(onlyCaps ? line : line.toUpperCase(), probs);
 				retVal.add(rna);
 				
 				line = reader.readLine();
