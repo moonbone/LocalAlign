@@ -1,24 +1,25 @@
 package edu.tau.compbio;
 
+import edu.tau.compbio.util.RNACompeteScorer;
+import edu.tau.compbio.util.RNAWithPairingProbabilities;
+import gnu.getopt.Getopt;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 
 import com.ibm.compbio.seqalign.CustomSmithWaterman;
-
-import edu.tau.compbio.util.RNACompeteScorer;
-import edu.tau.compbio.util.RNAWithPairingProbabilities;
-
-import gnu.getopt.Getopt;
+import com.ibm.compbio.seqalign.SmithWaterman;
 
 public class RNAMotifSandbox {
 
 	public static void main(String[] args) throws IOException{
 		
-		Getopt go = new Getopt("RNAMotifSandbox",args, "s:p:c:i:m:r:g:");
+		Getopt go = new Getopt("RNAMotifSandbox",args, "s:p:c:i:m:r:g:o:");
 		int match = 5;
 		int mismatch = -4;
 		int gap = -10;
+		double offset = -3;
 		String sequenceInputFile = null;
 		String probabilitiesInputFile = null;
 		String rnaCompeteInputFile = null;
@@ -49,6 +50,9 @@ public class RNAMotifSandbox {
 			case 'g':
 				gap = Integer.parseInt(go.getOptarg());
 				break;
+			case 'o':
+				offset = Double.parseDouble(go.getOptarg());
+				break;
 			}
 		}
 		if(null == sequenceInputFile || null == probabilitiesInputFile || null == rnaCompeteInputFile || null == rnaCompeteExperimentID)
@@ -69,20 +73,22 @@ public class RNAMotifSandbox {
 		for (RNAWithPairingProbabilities rna1 : data)
 		{
 			System.err.printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b%4d%% (%4d/%4d)",(int)(100*i/totalSequences),i+1,(int)totalSequences);
+
 			for (RNAWithPairingProbabilities rna2 : data.subList(data.indexOf(rna1)+1, data.size()))
 			{
-				CustomSmithWaterman a  = new CustomSmithWaterman(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray());
+				SmithWaterman a  = new CustomSmithWaterman(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray());
+				//SmithWaterman a  = new SmithWaterman(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap);
 				String[] res=  a.getAlignedSequences();
-								
-				//System.out.printf("%f\t%f\n",rnaCompete.getScoreForSubsequence(res[0]),rnaCompete.getScoreForSubsequence(res[1]));
+				System.out.printf("%d,%d\n",res[0].length(),res[1].length());				
 				totalScore += rnaCompete.getScoreForSubsequence(res[0])+rnaCompete.getScoreForSubsequence(res[1]);
+				//totalScore += rnaCompete.getScoreForSubsequence(rna1.getSequenceArray())+rnaCompete.getScoreForSubsequence(rna2.getSequenceArray());
 				
 			}
 			i++;
-			if (i>1000)
-			{
-				//return;
-			}
+//			if (i>1000)
+//			{
+//				//return;
+//			}
 		}
 		System.out.printf("\n%f\n",totalScore);
 		// Perform the local alignment.

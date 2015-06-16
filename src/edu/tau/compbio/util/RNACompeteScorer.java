@@ -31,6 +31,10 @@ public class RNACompeteScorer {
 			titles.add(valuesScanner.next());
 		}
 		int proteinCol = titles.indexOf(proteinID);
+		if (proteinCol < 0)
+		{
+			throw new FileNotFoundException("Protein ID not found in RNA_compete scores file.");
+		}
 		while (null != (line = lineScanner.readLine()))
 		{
 			valuesScanner = new Scanner(line).useDelimiter("\\s+");

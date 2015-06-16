@@ -5,18 +5,21 @@ import com.ibm.compbio.Cell;
 public class CustomSmithWaterman extends SmithWaterman {
 
    private double[] m_probs1, m_probs2;
+   double m_offset;
    
    public CustomSmithWaterman(String sequence1, String sequence2,double[] probs1,double[] probs2) {
       super(sequence1, sequence2);
       m_probs1 = probs1;
       m_probs2 = probs2;
+      m_offset = -3;
    }
 
    public CustomSmithWaterman(String sequence1, String sequence2, int match,
-         int mismatch, int gap,double[] probs1,double[] probs2) {
+         int mismatch, int gap, double offset, double[] probs1,double[] probs2) {
       super(sequence1, sequence2, match, mismatch, gap);
       m_probs1 = probs1;
       m_probs2 = probs2;
+      m_offset = offset;
    }
    
    private double getProbabilityScore(Cell c,int bitmask)
@@ -40,11 +43,11 @@ public class CustomSmithWaterman extends SmithWaterman {
    @Override
    protected void fillInCell(Cell currentCell, Cell cellAbove, Cell cellToLeft,
          Cell cellAboveLeft) {
-      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScore(currentCell,2) -3;
-      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScore(currentCell,1) -3;
+      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScore(currentCell,2) + m_offset;
+      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScore(currentCell,1) + m_offset;
       double matchOrMismatchScore = cellAboveLeft.getScoreDouble();
       
-      matchOrMismatchScore += getMatchMismatchScore(currentCell)*getProbabilityScore(currentCell,3) -3;
+      matchOrMismatchScore += getMatchMismatchScore(currentCell)*getProbabilityScore(currentCell,3) + m_offset;
       
       if (rowSpaceScore >= colSpaceScore) {
          if (matchOrMismatchScore >= rowSpaceScore) {
@@ -106,10 +109,5 @@ public class CustomSmithWaterman extends SmithWaterman {
 	   return retArray;
    }
    
-   public String[] getAlignedSequences()
-   {
-	   ensureTableIsFilledIn();
-	   return (String[])getTraceback();
-   }
 
 }

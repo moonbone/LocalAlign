@@ -99,4 +99,11 @@ public class SmithWaterman extends SequenceAlignment {
    protected int getInitialScore(int row, int col) {
       return 0;
    }
+   
+   public String[] getAlignedSequences()
+   {
+	   ensureTableIsFilledIn();
+	   return (String[])getTraceback();
+   }
+
 }
