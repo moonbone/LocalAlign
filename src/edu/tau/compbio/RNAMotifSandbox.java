@@ -18,7 +18,7 @@ public class RNAMotifSandbox {
 
 	public static void main(String[] args) throws IOException{
 		
-		Getopt go = new Getopt("RNAMotifSandbox",args, "s:p:c:i:m:r:g:o:t:bx:y:");
+		Getopt go = new Getopt("RNAMotifSandbox",args, "s:p:c:i:m:r:g:o:t:bx:y:w");
 		int match = 5;
 		int mismatch = -4;
 		int gap = -10;
@@ -30,6 +30,7 @@ public class RNAMotifSandbox {
 		String method = "pairwise";
 		int firstSeqID = 0,secondSeqID = 0;
 		boolean findBest = false;
+		boolean useClassicSmithWaterman = false;
 		int c;
 		while ((c = go.getopt()) != -1)
 		{
@@ -71,6 +72,9 @@ public class RNAMotifSandbox {
 			case 'y':
 				secondSeqID = Integer.parseInt(go.getOptarg());
 				break;
+			case 'w':
+				useClassicSmithWaterman = true;
+				break;
 			}
 		}
 		if(null == sequenceInputFile || null == probabilitiesInputFile || null == rnaCompeteInputFile || null == rnaCompeteExperimentID)
@@ -100,16 +104,17 @@ public class RNAMotifSandbox {
 	
 				for (RNAWithPairingProbabilities rna2 : data.subList(data.indexOf(rna1)+1, data.size()))
 				{
-					SmithWaterman a  = new CustomSmithWaterman(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray());
-					//SmithWaterman a  = new SmithWaterman(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap);
+					SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
+					
 					String[] res=  a.getAlignedSequences();
 					//System.out.printf("%d,%d\n",res[0].length(),res[1].length());				
 					double score = rnaCompete.getScoreForSubsequence(res[0])+rnaCompete.getScoreForSubsequence(res[1]);
 					totalScore += score;
-					topAlignments.add(new AlignmentScorePair(a.getAlignment(), score));
-					worstAlignments.add(new AlignmentScorePair(a.getAlignment(), score));
+					
 					if(findBest)
 					{
+						topAlignments.add(new AlignmentScorePair(a.getAlignment(), score));
+						worstAlignments.add(new AlignmentScorePair(a.getAlignment(), score));
 						if (topAlignments.size() > 10) topAlignments.pollFirst();
 						if (worstAlignments.size() > 10) worstAlignments.pollLast();
 					}

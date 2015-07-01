@@ -38,7 +38,7 @@ public class RNACompeteScorer {
 		while (null != (line = lineScanner.readLine()))
 		{
 			valuesScanner = new Scanner(line).useDelimiter("\\s+");
-			for (int i=0; i<proteinCol-1; i++)
+			for (int i=0; i<proteinCol; i++)
 			{
 				valuesScanner.next();
 			}

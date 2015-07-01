@@ -22,32 +22,57 @@ public class CustomSmithWaterman extends SmithWaterman {
       m_offset = offset;
    }
    
+   public static SmithWaterman createSmithWatermanSolver(String sequence1, String sequence2, int match, int mismatch, int gap, double offset, double[] probs1,double[] probs2,boolean classic)
+   {
+	   if(classic)
+		   return new SmithWaterman(sequence1, sequence2, match, mismatch, gap);
+	   else
+		   return new CustomSmithWaterman(sequence1, sequence2, match, mismatch, gap, offset, probs1, probs2);
+   }
    private double getProbabilityScore(Cell c,int bitmask)
    {
 	  // bitmask = 3;
-      return (Math.pow(0.5,Math.max(0,bitmask-2))) * ((1&bitmask)*m_probs1[c.getCol()-1]+(2&bitmask)*m_probs2[c.getRow()-1]);
+      //return (Math.pow(0.5,Math.max(0,bitmask-2))) * ((1&bitmask)*m_probs1[c.getCol()-1]+((2&bitmask)/2)*m_probs2[c.getRow()-1]);
+	   return Math.pow(
+			   Math.pow(m_probs1[c.getCol()-1],(1&bitmask) ) * 
+			   Math.pow(m_probs2[c.getRow()-1],(2&bitmask)/2) //geo-mean
+			   , Math.min(1,3.5-bitmask));
+   }
+   private double getProbabilityScoreBoth(Cell c)
+   {
+	   return Math.sqrt(m_probs1[c.getCol()-1] * m_probs2[c.getRow()-1]);
    }
    
-   private double getMatchMismatchScore(Cell cell)
+   private double getProbabilityScoreRow(Cell c)
+   {
+	   return m_probs2[c.getRow()-1];
+   }
+   
+   private double getProbabilityScoreCol(Cell c)
+   {
+	   return m_probs1[c.getCol()-1];
+   }
+   
+   private double getMatchMismatchScore(Cell cell,double prob)
    {
 	   if (sequence2.charAt(cell.getRow() - 1) == sequence1.charAt(cell.getCol() - 1))
 	   {
-		   return match;
+		   return match*prob;
 	   }
 	   else 
 	   {
-		   return mismatch;
+		   return mismatch*prob;
 	   } 
    }
    
    @Override
    protected void fillInCell(Cell currentCell, Cell cellAbove, Cell cellToLeft,
          Cell cellAboveLeft) {
-      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScore(currentCell,2) + m_offset;
-      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScore(currentCell,1) + m_offset;
+      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScoreRow(currentCell) + m_offset;
+      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScoreCol(currentCell) + m_offset;
       double matchOrMismatchScore = cellAboveLeft.getScoreDouble();
       
-      matchOrMismatchScore += getMatchMismatchScore(currentCell)*getProbabilityScore(currentCell,3) + m_offset;
+      matchOrMismatchScore += getMatchMismatchScore(currentCell,getProbabilityScoreBoth(currentCell)) + m_offset;
       
       if (rowSpaceScore >= colSpaceScore) {
          if (matchOrMismatchScore >= rowSpaceScore) {
