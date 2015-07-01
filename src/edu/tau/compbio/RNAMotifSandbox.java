@@ -131,7 +131,7 @@ public class RNAMotifSandbox {
 		}
 		else if (method.equals("specific"))
 		{
-			SmithWaterman a  = new CustomSmithWaterman(data.get(firstSeqID).getSequenceArray() ,data.get(secondSeqID).getSequenceArray(), match, mismatch, gap, offset, data.get(firstSeqID).getProbabilitiesArray(), data.get(secondSeqID).getProbabilitiesArray());
+			SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(data.get(firstSeqID).getSequenceArray() ,data.get(secondSeqID).getSequenceArray(), match, mismatch, gap, offset, data.get(firstSeqID).getProbabilitiesArray(), data.get(secondSeqID).getProbabilitiesArray(),useClassicSmithWaterman);
 			System.out.printf("score:%f\n%s\n%s\n\n",rnaCompete.getScoreForSubsequence(a.getAlignedSequences()[0])+rnaCompete.getScoreForSubsequence(a.getAlignedSequences()[1]),a.getAlignment()[0], a.getAlignment()[1]);
 		}
 		
