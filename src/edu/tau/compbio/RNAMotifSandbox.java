@@ -18,7 +18,7 @@ public class RNAMotifSandbox {
 
 	public static void main(String[] args) throws IOException{
 		
-		Getopt go = new Getopt("RNAMotifSandbox",args, "s:p:c:i:m:r:g:o:t:bx:y:w");
+		Getopt go = new Getopt("RNAMotifSandbox",args, "s:p:c:i:m:r:g:o:t:bx:y:wl");
 		int match = 5;
 		int mismatch = -4;
 		int gap = -10;
@@ -31,6 +31,7 @@ public class RNAMotifSandbox {
 		int firstSeqID = 0,secondSeqID = 0;
 		boolean findBest = false;
 		boolean useClassicSmithWaterman = false;
+		boolean outputLengthHist = false;
 		int c;
 		while ((c = go.getopt()) != -1)
 		{
@@ -75,6 +76,9 @@ public class RNAMotifSandbox {
 			case 'w':
 				useClassicSmithWaterman = true;
 				break;
+			case 'l':
+				outputLengthHist = true;
+				break;
 			}
 		}
 		if(null == sequenceInputFile || null == probabilitiesInputFile || null == rnaCompeteInputFile || null == rnaCompeteExperimentID)
@@ -85,6 +89,7 @@ public class RNAMotifSandbox {
 		}
 		System.out.printf("Working with params:\n\tmatch:%12d\n\tmismatch:%9d\n\tgap:%14d\n",match,mismatch,gap);
 		
+		int[] lengthHist = new int[100];
 		
 		Vector<RNAWithPairingProbabilities> data = RNAWithPairingProbabilities.readFromFiles(sequenceInputFile, probabilitiesInputFile,true);
 		RNACompeteScorer rnaCompete = new RNACompeteScorer(new File(rnaCompeteInputFile), rnaCompeteExperimentID);
@@ -107,6 +112,8 @@ public class RNAMotifSandbox {
 					SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
 					
 					String[] res=  a.getAlignedSequences();
+					lengthHist[Math.min(99,res[0].length())]++;
+					lengthHist[Math.min(99,res[1].length())]++;
 					//System.out.printf("%d,%d\n",res[0].length(),res[1].length());				
 					double score = rnaCompete.getScoreForSubsequence(res[0])+rnaCompete.getScoreForSubsequence(res[1]);
 					totalScore += score;
@@ -118,20 +125,18 @@ public class RNAMotifSandbox {
 						if (topAlignments.size() > 10) topAlignments.pollFirst();
 						if (worstAlignments.size() > 10) worstAlignments.pollLast();
 					}
-					//totalScore += rnaCompete.getScoreForSubsequence(rna1.getSequenceArray())+rnaCompete.getScoreForSubsequence(rna2.getSequenceArray());
 					
 				}
 				i++;
-	//			if (i>0)
-	//			{
-	//				break;
-	//			}
+
 			}
 			System.out.printf("\n%f\n",totalScore);
 		}
 		else if (method.equals("specific"))
 		{
 			SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(data.get(firstSeqID).getSequenceArray() ,data.get(secondSeqID).getSequenceArray(), match, mismatch, gap, offset, data.get(firstSeqID).getProbabilitiesArray(), data.get(secondSeqID).getProbabilitiesArray(),useClassicSmithWaterman);
+			lengthHist[Math.min(99,a.getAlignedSequences()[0].length())]++;
+			lengthHist[Math.min(99,a.getAlignedSequences()[1].length())]++;
 			System.out.printf("score:%f\n%s\n%s\n\n",rnaCompete.getScoreForSubsequence(a.getAlignedSequences()[0])+rnaCompete.getScoreForSubsequence(a.getAlignedSequences()[1]),a.getAlignment()[0], a.getAlignment()[1]);
 		}
 		
@@ -149,10 +154,16 @@ public class RNAMotifSandbox {
 				System.out.printf("score:%f\n%s\n%s\n\n",asp.getScore(),asp.getAlignment()[0], asp.getAlignment()[1]);
 			}
 		}
-		// Perform the local alignment.
-//		String[] aa = a.getAlignment();
-//		System.out.println("\nLocal alignment with Smith-Waterman:\n"
-//				+ aa[0] + "\n" + aa[1]);
+		
+		if(outputLengthHist)
+		{
+			System.out.print("LengthHistData:\n======================\n\nlengths = [");
+			for (int count : lengthHist)
+			{
+				System.out.printf("%d ",count);
+			}
+			System.out.print("];");
+		}
 
 	}
 
