@@ -73,13 +73,25 @@ public class RNACompeteScorer {
 		m_normalizationFactor = Collections.max(m_scores);
 	}
 	
+	public double getScoreForShortSubsequence(String subSeq)
+	{
+		return (	getScoreForSubsequence(subSeq+'A') +
+					getScoreForSubsequence(subSeq+'C') +
+					getScoreForSubsequence(subSeq+'G') +
+					getScoreForSubsequence(subSeq+'T') +
+					getScoreForSubsequence('A'+subSeq) +
+					getScoreForSubsequence('C'+subSeq) +
+					getScoreForSubsequence('G'+subSeq) +
+					getScoreForSubsequence('T'+subSeq)	)/8;								
+	}
+	
 	public double getScoreForSubsequence(String subSeq)
 	{
 		subSeq = subSeq.replace("-", "");
 		//TODO: add average in addition to max (2 options)
 		if(subSeq.length() < s_k)
 		{
-			return 0;
+			return getScoreForShortSubsequence(subSeq);
 		}
 		StringBuffer sb = new StringBuffer(subSeq.substring(0, s_k));
 		double avgScore = m_scores.elementAt(kMerToIndex(sb.toString()));

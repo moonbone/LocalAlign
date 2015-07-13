@@ -112,8 +112,8 @@ public class RNAMotifSandbox {
 					SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
 					
 					String[] res=  a.getAlignedSequences();
-					lengthHist[Math.min(99,res[0].length())]++;
-					lengthHist[Math.min(99,res[1].length())]++;
+					lengthHist[Math.min(99,res[0].replace("-", "").length())]++;
+					lengthHist[Math.min(99,res[1].replace("-", "").length())]++;
 					//System.out.printf("%d,%d\n",res[0].length(),res[1].length());				
 					double score = rnaCompete.getScoreForSubsequence(res[0])+rnaCompete.getScoreForSubsequence(res[1]);
 					totalScore += score;

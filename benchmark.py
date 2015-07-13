@@ -6,29 +6,32 @@ import os
 #cLine = 'Arguments = -s /specific/scratches/scratch/maordan/ELAVL1_Kishore.bed.CAPS40.txt -p /specific/scratches/scratch/maordan/ELAVL1_Kishore.bed.CAPS40.txt.probs -c /specific/scratches/scratch/maordan/e_scores.txt -i RNCMPT00121_e_setA -m %d -r %d -g %d -o 0\nOutput=output/%d_%d_%d.txt\nQueue'
 cLine = 'Arguments = -s /specific/scratches/scratch/maordan/PARCLIP_QKI_Hafner2010c_hg19.bed.txt -p /specific/scratches/scratch/maordan/PARCLIP_QKI_Hafner2010c_hg19.bed.txt.probs.csv -c /specific/scratches/scratch/maordan/e_scores.txt -i RNCMPT00047_e_setA -m %d -r %d -g %d -o 0\nOutput=output/%d_%d_%d.txt\nQueue'
 
+fillMissing = False
+fillMissing = True
+
 '''
 for conf in inputToTest:
 	print conf
 	os.system(cLine%tuple(conf))
 '''
-for i in xrange(40,41):
-	for j in xrange(-20,0,1):
-		for k in xrange(-100,0,100):
-			#os.system(cLine%(i,j,k))
-			print (cLine%(i,j,k,i,-j,-k))
-			pass
 
-exit()
+if not fillMissing:
+	for i in xrange(40,41):
+		for j in xrange(-200,-50,10):
+			for k in xrange(-80,-40,5):
+				#os.system(cLine%(i,j,k))
+				print (cLine%(i,j,k,i,-j,-k))
+			
 
-for i,j,k in [
-(40,-30,-20),
-(40,-20,-30),
+else:
+	for i,j,k in [
+(40,-90,-70),
+(40,-90,-65),
 
 
 
-
-]:
-	print (cLine%(i,j,k,i,-j,-k))
+	]:
+		print (cLine%(i,j,k,i,-j,-k))
 
 
 '''
