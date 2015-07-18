@@ -41,24 +41,24 @@ public class SmithWaterman extends SequenceAlignment {
       }
       if (rowSpaceScore >= colSpaceScore) {
          if (matchOrMismatchScore >= rowSpaceScore) {
-            if (matchOrMismatchScore > 0) {
+            if (true || matchOrMismatchScore > 0) {
                currentCell.setScore(matchOrMismatchScore);
                currentCell.setPrevCell(cellAboveLeft);
             }
          } else {
-            if (rowSpaceScore > 0) {
+            if (true || rowSpaceScore > 0) {
                currentCell.setScore(rowSpaceScore);
                currentCell.setPrevCell(cellAbove);
             }
          }
       } else {
          if (matchOrMismatchScore >= colSpaceScore) {
-            if (matchOrMismatchScore > 0) {
+            if (true || matchOrMismatchScore > 0) {
                currentCell.setScore(matchOrMismatchScore);
                currentCell.setPrevCell(cellAboveLeft);
             }
          } else {
-            if (colSpaceScore > 0) {
+            if (true || colSpaceScore > 0) {
                currentCell.setScore(colSpaceScore);
                currentCell.setPrevCell(cellToLeft);
             }
@@ -87,7 +87,7 @@ public class SmithWaterman extends SequenceAlignment {
 
    @Override
    protected Cell getTracebackStartingCell() {
-      return highScoreCell;
+      return scoreTable[scoreTable.length - 1][scoreTable[0].length - 1]; //highScoreCell;
    }
 
    @Override

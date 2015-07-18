@@ -40,60 +40,60 @@ public class CustomSmithWaterman extends SmithWaterman {
    }
    private double getProbabilityScoreBoth(Cell c)
    {
-	   return Math.sqrt(m_probs1[c.getCol()-1] * m_probs2[c.getRow()-1]);
+	   return 1-Math.abs(m_probs1[c.getCol()-1] - m_probs2[c.getRow()-1]);//Math.sqrt(m_probs1[c.getCol()-1] * m_probs2[c.getRow()-1]);
    }
    
    private double getProbabilityScoreRow(Cell c)
    {
-	   return m_probs2[c.getRow()-1];
+	   return 0;//m_probs2[c.getRow()-1];
    }
    
    private double getProbabilityScoreCol(Cell c)
    {
-	   return m_probs1[c.getCol()-1];
+	   return 0;//m_probs1[c.getCol()-1];
    }
    
    private double getMatchMismatchScore(Cell cell,double prob)
    {
 	   if (sequence2.charAt(cell.getRow() - 1) == sequence1.charAt(cell.getCol() - 1))
 	   {
-		   return match*prob;
+		   return match + match*prob;
 	   }
 	   else 
 	   {
-		   return mismatch*prob;
+		   return mismatch + match*prob;
 	   } 
    }
    
    @Override
    protected void fillInCell(Cell currentCell, Cell cellAbove, Cell cellToLeft,
          Cell cellAboveLeft) {
-      double rowSpaceScore = cellAbove.getScoreDouble() + space*getProbabilityScoreRow(currentCell) + m_offset;
-      double colSpaceScore = cellToLeft.getScoreDouble() + space*getProbabilityScoreCol(currentCell) + m_offset;
+      double rowSpaceScore = cellAbove.getScoreDouble() + space + getProbabilityScoreRow(currentCell) + m_offset;
+      double colSpaceScore = cellToLeft.getScoreDouble() + space + getProbabilityScoreCol(currentCell) + m_offset;
       double matchOrMismatchScore = cellAboveLeft.getScoreDouble();
       
       matchOrMismatchScore += getMatchMismatchScore(currentCell,getProbabilityScoreBoth(currentCell)) + m_offset;
       
       if (rowSpaceScore >= colSpaceScore) {
          if (matchOrMismatchScore >= rowSpaceScore) {
-            if (matchOrMismatchScore > 0) {
+            if (true || matchOrMismatchScore > 0) {
                currentCell.setScore(matchOrMismatchScore);
                currentCell.setPrevCell(cellAboveLeft);
             }
          } else {
-            if (rowSpaceScore > 0) {
+            if (true || rowSpaceScore > 0) {
                currentCell.setScore(rowSpaceScore);
                currentCell.setPrevCell(cellAbove);
             }
          }
       } else {
          if (matchOrMismatchScore >= colSpaceScore) {
-            if (matchOrMismatchScore > 0) {
+            if (true || matchOrMismatchScore > 0) {
                currentCell.setScore(matchOrMismatchScore);
                currentCell.setPrevCell(cellAboveLeft);
             }
          } else {
-            if (colSpaceScore > 0) {
+            if (true || colSpaceScore > 0) {
                currentCell.setScore(colSpaceScore);
                currentCell.setPrevCell(cellToLeft);
             }
@@ -110,7 +110,7 @@ public class CustomSmithWaterman extends SmithWaterman {
 	   String[] retArray = super.getAlignment();
 	   StringBuffer align1Buf = new StringBuffer();
 	   StringBuffer align2Buf = new StringBuffer();
-	   Cell currentCell = getTracebackStartingCell();
+	   Cell currentCell = scoreTable[scoreTable.length - 1][scoreTable[0].length - 1];//getTracebackStartingCell();
 	   int lastRow = currentCell.getRow(),lastCol = currentCell.getCol();
 	   int firstRow=0,firstCol=0;
 	   while (traceBackIsNotDone(currentCell)) {

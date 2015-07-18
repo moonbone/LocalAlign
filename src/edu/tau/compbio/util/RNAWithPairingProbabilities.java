@@ -58,21 +58,50 @@ public class RNAWithPairingProbabilities {
 			BufferedReader reader = new BufferedReader(new FileReader(sequencesFile));
 			Scanner csv = new Scanner(new File(probabilitiesFile));//.useLocale(Locale.US);
 			csv.useDelimiter("[,\\s]+");
-						
-			String line = reader.readLine();
-			while(line != null)
+			
+			if(sequencesFile.endsWith(".fa"))
 			{
-				double[] probs = new double[line.length()];
-				for (int i=0;i<line.length();i++)
+				//add to suuport FASTA:
+				String seq = null;
+						
+				String line = reader.readLine();
+				while(line != null)
 				{
-					//System.out.println(csv.next());
-					probs[i] = csv.nextDouble();
+					//FASTA support
+					seq = "";
+					while(line != null && (line=reader.readLine()) != null && !line.startsWith(">"))
+					{
+						seq += line.trim();
+					}
+					double[] probs = new double[seq.length()];
+					for (int i=0;i<seq.length();i++)
+					{
+						//System.out.println(csv.next());
+						probs[i] = csv.nextDouble();
+					}
+					
+					RNAWithPairingProbabilities rna = new RNAWithPairingProbabilities(onlyCaps ? seq : seq.toUpperCase(), probs);
+					retVal.add(rna);
+					
 				}
-				
-				RNAWithPairingProbabilities rna = new RNAWithPairingProbabilities(onlyCaps ? line : line.toUpperCase(), probs);
-				retVal.add(rna);
-				
-				line = reader.readLine();
+			}
+			else
+			{
+				String line = reader.readLine();
+				while(line != null)
+				{
+					double[] probs = new double[line.length()];
+					for (int i=0;i<line.length();i++)
+					{
+						//System.out.println(csv.next());
+						probs[i] = csv.nextDouble();
+					}
+					
+					RNAWithPairingProbabilities rna = new RNAWithPairingProbabilities(onlyCaps ? line : line.toUpperCase(), probs);
+					retVal.add(rna);
+					
+					line = reader.readLine();
+				}
 			}
 			
 					

@@ -67,15 +67,16 @@ public static void main(String[] args) throws IOException{
 		}
 		System.out.printf("Working with params:\n\tmatch:%12d\n\tmismatch:%9d\n\tgap:%14d\n",match,mismatch,gap);
 		
-		String[] folderNames = {"rRNA",	"SRP",	"tRNA",	"U5","g2intron"};
-
+		String[] folderNames = {"."};//"rRNA",	"SRP",	"tRNA",	"U5","g2intron"};
+		int allCountFound = 0;
+		int allCountTotal = 0;
 		for (String sequenceCollectionFolderName : folderNames)
 		{
 			Path collectionFolder = sequenceInputDir.resolve(sequenceCollectionFolderName);
 			Path unalignedFolder = collectionFolder.resolve("unaligned");
 			Path structuralFolder = collectionFolder.resolve("structural");
 			
-			System.out.printf("\n\n%s:\n==============\n\n",sequenceCollectionFolderName);
+			//System.out.printf("\n\n%s:\n==============\n\n",sequenceCollectionFolderName);
 			//for each file name in structured folder:
 			for (File file : structuralFolder.toFile().listFiles()) 
 			{
@@ -85,7 +86,7 @@ public static void main(String[] args) throws IOException{
 				
 				//read data from unaligned files (and probabilities)
 				Vector<RNAWithPairingProbabilities> data = RNAWithPairingProbabilities.readFromFiles(unalignedFolder.resolve(file.getName()).toString() ,unalignedFolder.resolve(file.getName()+".probs.csv").toString() );
-				System.out.printf("%s\n",file.getName());
+				//System.out.printf("%s\n",file.getName());
 				//for each pair in file:
 				int i = 0;
 				int j = 0;
@@ -98,7 +99,7 @@ public static void main(String[] args) throws IOException{
 						SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
 
 						//get pairs list from alignment
-						Collection<AlignmentPair> pairs = getAlignmentAsPairs(a.getAlignment());
+						Collection<AlignmentPair> pairs = getAlignmentAsPairs(a.getAlignedSequences());
 						
 						//get ref pairs from pre-calculated matrix
 						Collection<AlignmentPair> refPairs = refMatrix[i][j];
@@ -109,12 +110,14 @@ public static void main(String[] args) throws IOException{
 						for (AlignmentPair p : refPairs)
 						{
 							countTotal++;
+							allCountTotal++;
 							if (pairs.contains(p))
 							{
 								countFound++;
+								allCountFound++;
 							}
 						}
-						System.out.printf("%12d\t%12d\n",countFound,countTotal);
+						//System.out.printf("%12d\t%12d\n",countFound,countTotal);
 						j++;
 					}
 					i++;
@@ -124,6 +127,9 @@ public static void main(String[] args) throws IOException{
 				
 			}
 		}
+		
+		System.out.printf("%12d\t%12d\n",allCountFound,allCountTotal);
+		System.out.printf("Score: %12f\n",(double)(allCountFound)/allCountTotal);
 		
 	
 	}
@@ -139,9 +145,13 @@ public static void main(String[] args) throws IOException{
 			{
 				if(line.startsWith(">"))
 				{
+					v.add("");
 					continue;
 				}
-				v.add(line.trim());
+				else
+				{
+					v.set(v.size()-1, v.lastElement()+line.trim());
+				}
 			}
 			reader.close();
 			
