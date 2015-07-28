@@ -13,15 +13,28 @@ public class RNAWithPairingProbabilities {
 	
 	private String m_seq;
 	private double[] m_probs;
+	private String m_id;
 	
-	public RNAWithPairingProbabilities(String seq, double[] probs)
+	public RNAWithPairingProbabilities(String seq, double[] probs, String id)
 	{
 		int i = seq.replaceAll("[ACGT]", "#").indexOf('#');
 		int j = seq.replaceAll("[ACGT]", "#").lastIndexOf('#');
 		m_seq = seq.substring(i, j+1);
 		m_probs = Arrays.copyOfRange(probs,i,j+1);
+		m_id = id;
 		//m_probs = (Double[])Arrays.asList( probs ).subList(i,j).toArray();
 		
+	}
+	
+	public RNAWithPairingProbabilities(String seq, double[] probs)
+	{
+		this(seq, probs, null);
+	}
+	
+	
+	public String getID()
+	{
+		return m_id;
 	}
 	
 	public char sequenceAt(int i)
@@ -63,16 +76,19 @@ public class RNAWithPairingProbabilities {
 			{
 				//add to suuport FASTA:
 				String seq = null;
-						
+				
 				String line = reader.readLine();
+				String id;
 				while(line != null)
 				{
+					id = line.trim();
 					//FASTA support
 					seq = "";
 					while(line != null && (line=reader.readLine()) != null && !line.startsWith(">"))
 					{
 						seq += line.trim();
 					}
+					
 					double[] probs = new double[seq.length()];
 					for (int i=0;i<seq.length();i++)
 					{
@@ -80,7 +96,7 @@ public class RNAWithPairingProbabilities {
 						probs[i] = csv.nextDouble();
 					}
 					
-					RNAWithPairingProbabilities rna = new RNAWithPairingProbabilities(onlyCaps ? seq : seq.toUpperCase(), probs);
+					RNAWithPairingProbabilities rna = new RNAWithPairingProbabilities(onlyCaps ? seq : seq.toUpperCase(), probs,id);
 					retVal.add(rna);
 					
 				}

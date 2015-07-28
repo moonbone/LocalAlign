@@ -5,11 +5,12 @@ import edu.tau.compbio.util.RNAWithPairingProbabilities;
 import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -28,13 +29,14 @@ public class BEARBenchmark
 	
 public static void main(String[] args) throws IOException{
 		
-		Getopt go = new Getopt("RNAMotifSandbox",args, "s:m:r:g:o:w");
+		Getopt go = new Getopt("RNAMotifSandbox",args, "s:m:r:g:o:wf");
 		int match = 5;
 		int mismatch = -4;
 		int gap = -10;
 		double offset = -3;
 		Path sequenceInputDir = null;
 		boolean useClassicSmithWaterman = false;
+		boolean outputResultAsFiles = false;
 		int c;
 		while ((c = go.getopt()) != -1)
 		{
@@ -58,6 +60,9 @@ public static void main(String[] args) throws IOException{
 			case 'w':
 				useClassicSmithWaterman = true;
 				break;
+			case 'f':
+				outputResultAsFiles = true;
+				break;
 			}
 		}
 		if(null == sequenceInputDir )
@@ -75,6 +80,7 @@ public static void main(String[] args) throws IOException{
 			Path collectionFolder = sequenceInputDir.resolve(sequenceCollectionFolderName);
 			Path unalignedFolder = collectionFolder.resolve("unaligned");
 			Path structuralFolder = collectionFolder.resolve("structural");
+			Path alignedFolder = collectionFolder.resolve("aligned");
 			
 			//System.out.printf("\n\n%s:\n==============\n\n",sequenceCollectionFolderName);
 			//for each file name in structured folder:
@@ -98,6 +104,20 @@ public static void main(String[] args) throws IOException{
 						//calculate alignment
 						SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
 
+						if(outputResultAsFiles)
+						{
+							BufferedWriter writer = new BufferedWriter(new FileWriter(alignedFolder.resolve(file.getName()).toString()));
+							writer.write(rna1.getID());
+							writer.write('\n');
+							writer.write(a.getAlignedSequences()[0]);
+							writer.write('\n');
+							writer.write(rna2.getID());
+							writer.write('\n');
+							writer.write(a.getAlignedSequences()[1]);
+							writer.write('\n');
+							writer.close();
+						}
+						
 						//get pairs list from alignment
 						Collection<AlignmentPair> pairs = getAlignmentAsPairs(a.getAlignedSequences());
 						
@@ -109,20 +129,35 @@ public static void main(String[] args) throws IOException{
 						int countTotal = 0;
 						for (AlignmentPair p : refPairs)
 						{
-							countTotal++;
-							allCountTotal++;
-							if (pairs.contains(p))
+							if( p.first >= 0)
 							{
-								countFound++;
-								allCountFound++;
+								countTotal++;
+								allCountTotal++;
+								if (pairs.contains(p))
+								{
+									countFound++;
+									allCountFound++;
+								}
+							}
+							if( p.second >= 0)
+							{
+								countTotal++;
+								allCountTotal++;
+								if (pairs.contains(p))
+								{
+									countFound++;
+									allCountFound++;
+								}
 							}
 						}
+						
 						//System.out.printf("%12d\t%12d\n",countFound,countTotal);
 						j++;
 					}
 					i++;
 
 				}
+				//break;
 					
 				
 			}
@@ -197,9 +232,20 @@ public static void main(String[] args) throws IOException{
 		{
 			ci = first.charAt(iter);
 			cj = second.charAt(iter);
-			if(ci != '-' && cj != '-')
+			if(ci != '-' || cj != '-')
 			{
-				resList.add(new AlignmentPair(i, j));
+				if(ci == '-' )
+				{
+					resList.add(new AlignmentPair(-1, j));
+				}
+				else if(cj == '-' )
+				{
+					resList.add(new AlignmentPair(i, -1));
+				}
+				else
+				{
+					resList.add(new AlignmentPair(i, j));
+				}
 			}
 			if(ci != '-')
 			{
