@@ -29,7 +29,7 @@ public class BEARBenchmark
 	
 public static void main(String[] args) throws IOException{
 		
-		Getopt go = new Getopt("RNAMotifSandbox",args, "s:m:r:g:o:wf");
+		Getopt go = new Getopt("RNAMotifSandbox",args, "s:m:r:g:o:wfu:x:");
 		int match = 5;
 		int mismatch = -4;
 		int gap = -10;
@@ -37,7 +37,9 @@ public static void main(String[] args) throws IOException{
 		Path sequenceInputDir = null;
 		boolean useClassicSmithWaterman = false;
 		boolean outputResultAsFiles = false;
+		double probRatio = 1;
 		int c;
+		String filesSuffix = ".fa";
 		while ((c = go.getopt()) != -1)
 		{
 			switch (c)
@@ -63,6 +65,12 @@ public static void main(String[] args) throws IOException{
 			case 'f':
 				outputResultAsFiles = true;
 				break;
+			case 'u':
+				probRatio = Double.parseDouble(go.getOptarg());
+				break;
+			case 'x':
+				filesSuffix = go.getOptarg();
+				break;
 			}
 		}
 		if(null == sequenceInputDir )
@@ -72,8 +80,8 @@ public static void main(String[] args) throws IOException{
 		}
 		System.out.printf("Working with params:\n\tmatch:%12d\n\tmismatch:%9d\n\tgap:%14d\n",match,mismatch,gap);
 		
-		String[] folderNames = {"."};//"rRNA",	"SRP",	"tRNA",	"U5","g2intron"};
-		int allCountFound = 0;
+		String[] folderNames = {"."}; //{"rRNA",	"tRNA",	"U5","g2intron"};//change  between these according to data set.
+		float allCountFound = 0;
 		int allCountTotal = 0;
 		for (String sequenceCollectionFolderName : folderNames)
 		{
@@ -81,11 +89,19 @@ public static void main(String[] args) throws IOException{
 			Path unalignedFolder = collectionFolder.resolve("unaligned");
 			Path structuralFolder = collectionFolder.resolve("structural");
 			Path alignedFolder = collectionFolder.resolve("aligned");
+			if(!alignedFolder.toFile().exists())
+			{
+				alignedFolder.toFile().mkdir();
+			}
 			
 			//System.out.printf("\n\n%s:\n==============\n\n",sequenceCollectionFolderName);
 			//for each file name in structured folder:
-			for (File file : structuralFolder.toFile().listFiles()) 
+			for (File file : structuralFolder.toFile().listFiles())
 			{
+				if(!file.getName().endsWith(filesSuffix))
+				{
+					continue;
+				}
 			
 				//get pairs list matrix from "structural" folder
 				Collection<AlignmentPair>[][] refMatrix = getRefMatrix(structuralFolder.resolve(file.getName()));
@@ -102,11 +118,11 @@ public static void main(String[] args) throws IOException{
 					for (RNAWithPairingProbabilities rna2 : data.subList(data.indexOf(rna1)+1, data.size()))
 					{
 						//calculate alignment
-						SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
+						SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset,probRatio, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
 
 						if(outputResultAsFiles)
 						{
-							BufferedWriter writer = new BufferedWriter(new FileWriter(alignedFolder.resolve(file.getName()).toString()));
+							BufferedWriter writer = new BufferedWriter(new FileWriter(alignedFolder.toString() + File.separatorChar + (file.getName())));
 							writer.write(rna1.getID());
 							writer.write('\n');
 							writer.write(a.getAlignedSequences()[0]);
@@ -132,24 +148,26 @@ public static void main(String[] args) throws IOException{
 							if( p.first >= 0)
 							{
 								countTotal++;
-								allCountTotal++;
+//								allCountTotal++;
 								if (pairs.contains(p))
 								{
 									countFound++;
-									allCountFound++;
+//									allCountFound++;
 								}
 							}
 							if( p.second >= 0)
 							{
 								countTotal++;
-								allCountTotal++;
+//								allCountTotal++;
 								if (pairs.contains(p))
 								{
 									countFound++;
-									allCountFound++;
+//									allCountFound++;
 								}
 							}
 						}
+						++allCountTotal;
+						allCountFound += ((float)countFound)/countTotal;
 						
 						//System.out.printf("%12d\t%12d\n",countFound,countTotal);
 						j++;
@@ -163,7 +181,7 @@ public static void main(String[] args) throws IOException{
 			}
 		}
 		
-		System.out.printf("%12d\t%12d\n",allCountFound,allCountTotal);
+		System.out.printf("%12f\t%12d\n",allCountFound,allCountTotal);
 		System.out.printf("Score: %12f\n",(double)(allCountFound)/allCountTotal);
 		
 	

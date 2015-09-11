@@ -17,8 +17,8 @@ public class RNAWithPairingProbabilities {
 	
 	public RNAWithPairingProbabilities(String seq, double[] probs, String id)
 	{
-		int i = seq.replaceAll("[ACGT]", "#").indexOf('#');
-		int j = seq.replaceAll("[ACGT]", "#").lastIndexOf('#');
+		int i = seq.replaceAll("[ACGTU]", "#").indexOf('#');
+		int j = seq.replaceAll("[ACGTU]", "#").lastIndexOf('#');
 		m_seq = seq.substring(i, j+1);
 		m_probs = Arrays.copyOfRange(probs,i,j+1);
 		m_id = id;
@@ -72,7 +72,10 @@ public class RNAWithPairingProbabilities {
 			Scanner csv = new Scanner(new File(probabilitiesFile));//.useLocale(Locale.US);
 			csv.useDelimiter("[,\\s]+");
 			
-			if(sequencesFile.endsWith(".fa"))
+			reader.mark(5);
+			char firstChar = (char)reader.read();
+			reader.reset();
+			if( firstChar == '>' )
 			{
 				//add to suuport FASTA:
 				String seq = null;

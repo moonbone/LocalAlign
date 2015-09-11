@@ -5,29 +5,32 @@ import com.ibm.compbio.Cell;
 public class CustomSmithWaterman extends SmithWaterman {
 
    private double[] m_probs1, m_probs2;
-   double m_offset;
+   private double m_offset;
+   private double m_ratio; 
    
    public CustomSmithWaterman(String sequence1, String sequence2,double[] probs1,double[] probs2) {
       super(sequence1, sequence2);
       m_probs1 = probs1;
       m_probs2 = probs2;
       m_offset = -3;
+      m_ratio = 1;
    }
 
    public CustomSmithWaterman(String sequence1, String sequence2, int match,
-         int mismatch, int gap, double offset, double[] probs1,double[] probs2) {
+         int mismatch, int gap, double offset,double probRatio, double[] probs1,double[] probs2) {
       super(sequence1, sequence2, match, mismatch, gap);
       m_probs1 = probs1;
       m_probs2 = probs2;
       m_offset = offset;
+      m_ratio = probRatio;
    }
    
-   public static SmithWaterman createSmithWatermanSolver(String sequence1, String sequence2, int match, int mismatch, int gap, double offset, double[] probs1,double[] probs2,boolean classic)
+   public static SmithWaterman createSmithWatermanSolver(String sequence1, String sequence2, int match, int mismatch, int gap, double offset,double probRatio, double[] probs1,double[] probs2,boolean classic)
    {
 	   if(classic)
 		   return new SmithWaterman(sequence1, sequence2, match, mismatch, gap);
 	   else
-		   return new CustomSmithWaterman(sequence1, sequence2, match, mismatch, gap, offset, probs1, probs2);
+		   return new CustomSmithWaterman(sequence1, sequence2, match, mismatch, gap, offset,probRatio, probs1, probs2);
    }
    private double getProbabilityScore(Cell c,int bitmask)
    {
@@ -57,11 +60,11 @@ public class CustomSmithWaterman extends SmithWaterman {
    {
 	   if (sequence2.charAt(cell.getRow() - 1) == sequence1.charAt(cell.getCol() - 1))
 	   {
-		   return match + match*prob;
+		   return match + match*prob*m_ratio;
 	   }
 	   else 
 	   {
-		   return mismatch + match*prob;
+		   return mismatch + match*prob*m_ratio;
 	   } 
    }
    

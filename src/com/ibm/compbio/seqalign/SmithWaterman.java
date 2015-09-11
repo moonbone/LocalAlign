@@ -82,23 +82,35 @@ public class SmithWaterman extends SequenceAlignment {
 
    @Override
    protected boolean traceBackIsNotDone(Cell currentCell) {
-      return currentCell.getScore() != 0;
+      return currentCell.getPrevCell() != null;
    }
 
    @Override
    protected Cell getTracebackStartingCell() {
-      return scoreTable[scoreTable.length - 1][scoreTable[0].length - 1]; //highScoreCell;
+      return scoreTable[scoreTable.length - 1][scoreTable[0].length - 1];
    }
-
+   
    @Override
    protected Cell getInitialPointer(int row, int col) {
-      return null;
-   }
-
+	      if (row == 0 && col != 0) {
+	         return scoreTable[row][col - 1];
+	      } else if (col == 0 && row != 0) {
+	         return scoreTable[row - 1][col];
+	      } else {
+	         return null;
+	      }
+	   }
+   
    @Override
-   protected int getInitialScore(int row, int col) {
-      return 0;
-   }
+	   protected int getInitialScore(int row, int col) {
+	      if (row == 0 && col != 0) {
+	         return col * space;
+	      } else if (col == 0 && row != 0) {
+	         return row * space;
+	      } else {
+	         return 0;
+	      }
+	   }
    
    public String[] getAlignedSequences()
    {

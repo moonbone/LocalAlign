@@ -18,7 +18,7 @@ public class RNAMotifSandbox {
 
 	public static void main(String[] args) throws IOException{
 		
-		Getopt go = new Getopt("RNAMotifSandbox",args, "s:p:c:i:m:r:g:o:t:bx:y:wl");
+		Getopt go = new Getopt("RNAMotifSandbox",args, "s:p:c:i:m:r:g:o:t:bx:y:wlu:");
 		int match = 5;
 		int mismatch = -4;
 		int gap = -10;
@@ -32,6 +32,7 @@ public class RNAMotifSandbox {
 		boolean findBest = false;
 		boolean useClassicSmithWaterman = false;
 		boolean outputLengthHist = false;
+		double probRatio = 1;
 		int c;
 		while ((c = go.getopt()) != -1)
 		{
@@ -79,6 +80,10 @@ public class RNAMotifSandbox {
 			case 'l':
 				outputLengthHist = true;
 				break;
+			case 'u':
+				probRatio = Double.parseDouble(go.getOptarg());
+				break;
+				
 			}
 		}
 		if(null == sequenceInputFile || null == probabilitiesInputFile || null == rnaCompeteInputFile || null == rnaCompeteExperimentID)
@@ -109,7 +114,7 @@ public class RNAMotifSandbox {
 	
 				for (RNAWithPairingProbabilities rna2 : data.subList(data.indexOf(rna1)+1, data.size()))
 				{
-					SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
+					SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset,probRatio, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
 					
 					String[] res=  a.getAlignedSequences();
 					lengthHist[Math.min(99,res[0].replace("-", "").length())]++;
@@ -134,7 +139,7 @@ public class RNAMotifSandbox {
 		}
 		else if (method.equals("specific"))
 		{
-			SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(data.get(firstSeqID).getSequenceArray() ,data.get(secondSeqID).getSequenceArray(), match, mismatch, gap, offset, data.get(firstSeqID).getProbabilitiesArray(), data.get(secondSeqID).getProbabilitiesArray(),useClassicSmithWaterman);
+			SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(data.get(firstSeqID).getSequenceArray() ,data.get(secondSeqID).getSequenceArray(), match, mismatch, gap, offset,probRatio, data.get(firstSeqID).getProbabilitiesArray(), data.get(secondSeqID).getProbabilitiesArray(),useClassicSmithWaterman);
 			lengthHist[Math.min(99,a.getAlignedSequences()[0].length())]++;
 			lengthHist[Math.min(99,a.getAlignedSequences()[1].length())]++;
 			System.out.printf("score:%f\n%s\n%s\n\n",rnaCompete.getScoreForSubsequence(a.getAlignedSequences()[0])+rnaCompete.getScoreForSubsequence(a.getAlignedSequences()[1]),a.getAlignment()[0], a.getAlignment()[1]);
