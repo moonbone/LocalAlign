@@ -30,10 +30,10 @@ if size(scores,3) > 1
         hold on
         quiver(g,r,GX,GY)
         xlabel('gap score')
-        ylabel('mismatch score')
+        ylabel('mismatch score') 
         title(['probs score ratio = ' num2str(m(i))])
         legend('BRAlibase based alignment quality')
-        hold off
+        hold off 
     end
     score = max(scores(:));
     [M,R] = find(scores == max(scores(:)));
