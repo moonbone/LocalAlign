@@ -4,9 +4,9 @@ import com.ibm.compbio.Cell;
 
 public class CustomSmithWaterman extends SmithWaterman {
 
-   private double[] m_probs1, m_probs2;
-   private double m_offset;
-   private double m_ratio; 
+   protected double[] m_probs1, m_probs2;
+   protected double m_offset;
+   protected double m_ratio; 
    
    public CustomSmithWaterman(String sequence1, String sequence2,double[] probs1,double[] probs2) {
       super(sequence1, sequence2);
@@ -46,17 +46,17 @@ public class CustomSmithWaterman extends SmithWaterman {
 	   return 1-Math.abs(m_probs1[c.getCol()-1] - m_probs2[c.getRow()-1]);//Math.sqrt(m_probs1[c.getCol()-1] * m_probs2[c.getRow()-1]);
    }
    
-   private double getProbabilityScoreRow(Cell c)
+   protected double getProbabilityScoreRow(Cell c)
    {
 	   return 0;//m_probs2[c.getRow()-1];
    }
    
-   private double getProbabilityScoreCol(Cell c)
+   protected double getProbabilityScoreCol(Cell c)
    {
 	   return 0;//m_probs1[c.getCol()-1];
    }
    
-   private double getMatchMismatchScore(Cell cell,double prob)
+   protected double getMatchMismatchScore(Cell cell,double prob)
    {
 	   if (sequence2.charAt(cell.getRow() - 1) == sequence1.charAt(cell.getCol() - 1))
 	   {
