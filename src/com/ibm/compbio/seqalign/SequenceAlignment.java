@@ -83,5 +83,5 @@ public abstract class SequenceAlignment extends DynamicProgramming {
       return alignments;
    }
 
-   protected abstract Cell getTracebackStartingCell();
+   public abstract Cell getTracebackStartingCell();
 }

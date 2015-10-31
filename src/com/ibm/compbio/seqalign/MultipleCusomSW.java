@@ -1,12 +1,18 @@
 package com.ibm.compbio.seqalign;
 
+import java.util.LinkedList;
+import java.util.Vector;
+
+import org.biojava.bio.dp.ScoreType.Probability;
+
 import com.ibm.compbio.Cell;
 
 public class MultipleCusomSW extends CustomSmithWaterman {
 
 	private String[] sequence1;
 	private String[] sequence2;
-	
+	private Double[] m_consensusProbs;
+
 	public MultipleCusomSW(String[] sequence1, String[] sequence2,double[] probs1,double[] probs2) {
 		super(sequence1[0], sequence2[0],probs1,probs2);
 		this.sequence1 = sequence1;
@@ -25,29 +31,29 @@ public class MultipleCusomSW extends CustomSmithWaterman {
 	{
 		// if gap is already introduced at this location we do not add to the penalty
 		// this is done by adding the inverse of "space" (the gap penalty)
-		boolean foundGap = false;
+		double countGaps = 0;
 		
 		for (int i=0; i<sequence2.length; i++)
 		{
-			foundGap |= sequence2[i].charAt(c.getRow()-1) == '-';
+			countGaps += sequence2[i].charAt(c.getRow()-1) == '-' ? 1 : 0;
 		}
-		return foundGap ? -space : 0;//m_probs2[c.getRow()-1];
+		return -space*countGaps/sequence2.length ;//m_probs2[c.getRow()-1];
 	}
-	
+
 	@Override
 	protected double getProbabilityScoreCol(Cell c)
 	{
 		// if gap is already introduced at this location we do not add to the penalty
 		// this is done by adding the inverse of "space" (the gap penalty)
-		boolean foundGap = false;
+		double countGaps = 0;
 		
 		for (int i=0; i<sequence1.length; i++)
 		{
-			foundGap |= sequence1[i].charAt(c.getCol()-1) == '-';
+			countGaps += sequence1[i].charAt(c.getCol()-1) == '-' ? 1 : 0;
 		}
-		return foundGap ? -space : 0;//m_probs1[c.getCol()-1];
+		return -space*countGaps/sequence1.length; //m_probs1[c.getCol()-1];
 	}
-	
+
 	@Override
 	protected double getMatchMismatchScore(Cell cell,double prob)
 	{
@@ -72,24 +78,26 @@ public class MultipleCusomSW extends CustomSmithWaterman {
 				{
 					comulativeScore += mismatch;
 				}
-				
+
 				comulativeScore += match*prob*m_ratio;
 			}
 		}
 		return comulativeScore / (sequence1.length * sequence2.length);
 	}
-	
-	
+
+
 	@Override
 	public String[] getAlignment()
 	{
 		ensureTableIsFilledIn();
 		return (String[])getTraceback();
 	}
-	
+
 	@Override
 	protected Object getTraceback() {
-				
+
+		LinkedList<Double> newProbs = new LinkedList<Double>();
+		
 		StringBuffer[] align1Buf = new StringBuffer[sequence1.length];
 		StringBuffer[] align2Buf = new StringBuffer[sequence2.length];
 		for (int i=0; i<sequence1.length;i++)
@@ -100,25 +108,34 @@ public class MultipleCusomSW extends CustomSmithWaterman {
 		{
 			align2Buf[i] = new StringBuffer();
 		}
-		
+
 		Cell currentCell = getTracebackStartingCell();
 		while (traceBackIsNotDone(currentCell)) {
+			double currentProb = 0;
+			int numberOfAdditives = 0;
 			if (currentCell.getRow() - currentCell.getPrevCell().getRow() == 1) {
 				for(int i=0; i<sequence2.length;i++)
 					align2Buf[i].insert(0, sequence2[i].charAt(currentCell.getRow() - 1));
+				currentProb += m_probs2[currentCell.getRow()-1];
+				numberOfAdditives++;
 			} else {
 				for(int i=0; i<sequence2.length;i++)
 					align2Buf[i].insert(0, '-');
 			}
 			if (currentCell.getCol() - currentCell.getPrevCell().getCol() == 1) {
 				for(int i=0; i<sequence1.length;i++)
-					align1Buf[i].insert(0, sequence1[i].charAt(currentCell.getRow() - 1));
+					align1Buf[i].insert(0, sequence1[i].charAt(currentCell.getCol() - 1));
+				currentProb += m_probs1[currentCell.getCol()-1];
+				numberOfAdditives++;
 			} else {
 				for(int i=0; i<sequence1.length;i++)
 					align1Buf[i].insert(0, '-');
 			}
 			currentCell = currentCell.getPrevCell();
+			newProbs.addFirst(currentProb/numberOfAdditives);
 		}
+		
+		m_consensusProbs = newProbs.toArray(new Double[1]);
 
 		String[] alignments = new String[sequence1.length + sequence2.length];
 		int i=0;
@@ -133,5 +150,15 @@ public class MultipleCusomSW extends CustomSmithWaterman {
 		}
 
 		return alignments;
+	}
+	
+	public double[] getConsensusProbs()
+	{
+		double[] res = new double[m_consensusProbs.length];
+		for (int i=0; i<m_consensusProbs.length; i++)
+		{
+			res[i] = m_consensusProbs[i];
+		}
+		return res;
 	}
 }

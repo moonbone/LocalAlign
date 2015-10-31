@@ -1,7 +1,9 @@
 package edu.tau.compbio;
 
 import edu.tau.compbio.util.AlignmentPair;
+import edu.tau.compbio.util.MultipleSequenceAndProbabilities;
 import edu.tau.compbio.util.RNAWithPairingProbabilities;
+import edu.tau.compbio.util.UPGMA;
 import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;
@@ -18,7 +20,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.ibm.compbio.seqalign.CustomSmithWaterman;
+import com.ibm.compbio.seqalign.MultipleCusomSW;
 import com.ibm.compbio.seqalign.SmithWaterman;
 
 
@@ -29,7 +34,7 @@ public class BEARBenchmark
 	
 public static void main(String[] args) throws IOException{
 		
-		Getopt go = new Getopt("RNAMotifSandbox",args, "s:m:r:g:o:wfu:x:");
+		Getopt go = new Getopt("RNAMotifSandbox",args, "s:m:r:g:o:wfu:x:t:");
 		int match = 5;
 		int mismatch = -4;
 		int gap = -10;
@@ -40,6 +45,7 @@ public static void main(String[] args) throws IOException{
 		double probRatio = 1;
 		int c;
 		String filesSuffix = ".fa";
+		String method = "pairwise";
 		while ((c = go.getopt()) != -1)
 		{
 			switch (c)
@@ -70,6 +76,9 @@ public static void main(String[] args) throws IOException{
 				break;
 			case 'x':
 				filesSuffix = go.getOptarg();
+				break;
+			case 't':
+				method = go.getOptarg();
 				break;
 			}
 		}
@@ -108,6 +117,12 @@ public static void main(String[] args) throws IOException{
 				
 				//read data from unaligned files (and probabilities)
 				Vector<RNAWithPairingProbabilities> data = RNAWithPairingProbabilities.readFromFiles(unalignedFolder.resolve(file.getName()).toString() ,unalignedFolder.resolve(file.getName()+".probs.csv").toString() );
+				
+				int numberOfSeqs = data.size();
+				String[][] aSeqs = new String[numberOfSeqs][numberOfSeqs];
+				String[][] bSeqs = new String[numberOfSeqs][numberOfSeqs];
+				double[][] pairwiseScores = new double[numberOfSeqs][numberOfSeqs]; 
+				
 				//System.out.printf("%s\n",file.getName());
 				//for each pair in file:
 				int i = 0;
@@ -120,7 +135,7 @@ public static void main(String[] args) throws IOException{
 						//calculate alignment
 						SmithWaterman a  = CustomSmithWaterman.createSmithWatermanSolver(rna1.getSequenceArray() ,rna2.getSequenceArray(), match, mismatch, gap, offset,probRatio, rna1.getProbabilitiesArray(), rna2.getProbabilitiesArray(),useClassicSmithWaterman);
 
-						if(outputResultAsFiles)
+						if(outputResultAsFiles && method.equals("pairwise"))
 						{
 							BufferedWriter writer = new BufferedWriter(new FileWriter(alignedFolder.toString() + File.separatorChar + (file.getName())));
 							writer.write(rna1.getID());
@@ -134,40 +149,50 @@ public static void main(String[] args) throws IOException{
 							writer.close();
 						}
 						
-						//get pairs list from alignment
-						Collection<AlignmentPair> pairs = getAlignmentAsPairs(a.getAlignedSequences());
-						
-						//get ref pairs from pre-calculated matrix
-						Collection<AlignmentPair> refPairs = refMatrix[i][j];
-						
-						//count pairs also in the list in pairs list matrix (reference)
-						int countFound = 0;
-						int countTotal = 0;
-						for (AlignmentPair p : refPairs)
+						if(method.equals("pairwise"))
 						{
-							if( p.first >= 0)
+							//get pairs list from alignment
+							Collection<AlignmentPair> pairs = getAlignmentAsPairs(a.getAlignedSequences());
+
+							//get ref pairs from pre-calculated matrix
+							Collection<AlignmentPair> refPairs = refMatrix[i][j];
+
+							//count pairs also in the list in pairs list matrix (reference)
+							int countFound = 0;
+							int countTotal = 0;
+							for (AlignmentPair p : refPairs)
 							{
-								countTotal++;
-//								allCountTotal++;
-								if (pairs.contains(p))
+								if( p.first >= 0)
 								{
-									countFound++;
-//									allCountFound++;
+									countTotal++;
+									//								allCountTotal++;
+									if (pairs.contains(p))
+									{
+										countFound++;
+										//									allCountFound++;
+									}
+								}
+								if( p.second >= 0)
+								{
+									countTotal++;
+									//								allCountTotal++;
+									if (pairs.contains(p))
+									{
+										countFound++;
+										//									allCountFound++;
+									}
 								}
 							}
-							if( p.second >= 0)
-							{
-								countTotal++;
-//								allCountTotal++;
-								if (pairs.contains(p))
-								{
-									countFound++;
-//									allCountFound++;
-								}
-							}
+							++allCountTotal;
+							allCountFound += ((float)countFound)/countTotal;
 						}
-						++allCountTotal;
-						allCountFound += ((float)countFound)/countTotal;
+						else if(method.equals("msa"))
+						{
+							String[] alignment = a.getAlignedSequences();
+							aSeqs[i][j] = alignment[0];
+							bSeqs[i][j] = alignment[1];
+							pairwiseScores[i][j] = a.getTracebackStartingCell().getScoreDouble();
+						}
 						
 						//System.out.printf("%12d\t%12d\n",countFound,countTotal);
 						j++;
@@ -176,7 +201,56 @@ public static void main(String[] args) throws IOException{
 
 				}
 				//break;
+				if(method.equals("msa"))
+				{
+					//run UPGMA over all pairwise scores
+					UPGMA upgma = new UPGMA(pairwiseScores);
 					
+					int[][] MSABuildOrder = upgma.getClusterCreationOrder();
+					Vector<MultipleSequenceAndProbabilities> msas = new Vector<MultipleSequenceAndProbabilities>();
+					i = 0;//data.size();
+					
+//					for(int k=0; k<data.size();k++)
+//					{
+//						msas.add(k, new MultipleSequenceAndProbabilities(new String[]{data.elementAt(k).getSequenceArray()}, data.elementAt(k).getProbabilitiesArray(),new String[]{data.elementAt(k).getID()} ));
+//					}
+					
+					for (int[] k : MSABuildOrder)
+					{
+						if(k[0] + k[1] == -2)
+						{
+							//msas.add(i, new RNAWithPairingProbabilities[]{aSeqs[k[0]][k[1]],bSeqs[k[0]][k[1]]});
+							msas.add(i, new MultipleSequenceAndProbabilities(new String[]{data.elementAt(i).getSequenceArray()}, data.elementAt(i).getProbabilitiesArray(),new String[]{data.elementAt(i).getID()} ));
+						}
+						else
+						{
+						//generate array of seqs and one probability array for each input MSA
+						
+							MultipleCusomSW ma = new MultipleCusomSW(msas.elementAt(k[0]).sequences, msas.elementAt(k[1]).sequences, msas.elementAt(k[0]).probabilities,msas.elementAt(k[1]).probabilities);
+							msas.add(i,new MultipleSequenceAndProbabilities(ma.getAlignedSequences(), ma.getConsensusProbs(),ArrayUtils.addAll(msas.elementAt(k[0]).ids , msas.elementAt(k[1]).ids)));
+							msas.set(k[0], null);
+							msas.set(k[1], null);
+						}
+						
+						i++;
+					}
+					int finalAlignment = i-1;
+					if(outputResultAsFiles)
+					{
+						BufferedWriter writer = new BufferedWriter(new FileWriter(alignedFolder.toString() + File.separatorChar + (file.getName())));
+						i=0;
+						for(String seq : msas.elementAt(finalAlignment).sequences)
+						{
+							writer.write(msas.elementAt(finalAlignment).ids[i]);
+							writer.write('\n');
+							writer.write(seq);
+							writer.write('\n');
+							i++;
+						}
+						writer.close();
+					}
+					
+				}
 				
 			}
 		}

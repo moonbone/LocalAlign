@@ -86,7 +86,7 @@ public class SmithWaterman extends SequenceAlignment {
    }
 
    @Override
-   protected Cell getTracebackStartingCell() {
+   public Cell getTracebackStartingCell() {
       return scoreTable[scoreTable.length - 1][scoreTable[0].length - 1];
    }
    
